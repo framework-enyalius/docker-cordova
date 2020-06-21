@@ -1,25 +1,18 @@
-FROM alpine:latest
- 
+FROM frolvlad/alpine-java:jdk8-full AS builder
 MAINTAINER Marcio Bigolin
 
-ENV JAVA_HOME       /usr/lib/jvm/java-1.8-openjdk
-ENV ANDROID_HOME    /opt/android-sdk
-ENV GRADLE_HOME     /opt/gradle
-ENV PATH            ${PATH}:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${GRADLE_HOME}/bin:${JAVA_HOME}/bin
-ENV SDK_VERSION     30.0.3
-ENV SDK_UPDATE      "platform-tools" "platforms;android-28" "platforms;android-27"
+ENV ANDROID_SDK_ROOT    /opt/android-sdk
+ENV PATH            ${PATH}:${ANDROID_SDK_ROOT}/tools/bin:${ANDROID_SDK_ROOT}/platform-tools
+ENV SDK_UPDATE      "platform-tools" "platforms;android-28" "platforms;android-27" "build-tools;30.0.0" "extras;google;google_play_services"
 
-RUN apk --update add openjdk8 npm curl
+RUN apk --update add npm curl gradle
 
-RUN  curl -SLO "https://dl.google.com/android/repository/platform-tools_r${SDK_VERSION}-linux.zip" \
-    && curl -SLO "https://dl.google.com/android/repository/commandlinetools-linux-6514223_latest.zip" \
-    && mkdir -p "${ANDROID_HOME}" \
-    && unzip "commandlinetools-linux-6514223_latest.zip" -d "${ANDROID_HOME}" \
-    && unzip "platform-tools_r${SDK_VERSION}-linux.zip" -d "${ANDROID_HOME}" \
-    && rm -Rf "platform-tools_r${SDK_VERSION}-linux.zip" \
+RUN curl -SLO "https://dl.google.com/android/repository/commandlinetools-linux-6514223_latest.zip" \
+    && mkdir -p "${ANDROID_SDK_ROOT}" \
+    && unzip "commandlinetools-linux-6514223_latest.zip" -d "${ANDROID_SDK_ROOT}" \
     && rm -Rf "commandlinetools-linux-6514223_latest.zip" 
 
-RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --install ${SDK_UPDATE} 
+RUN echo y | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --install ${SDK_UPDATE} 
 
 RUN npm install -g cordova
 
@@ -27,8 +20,17 @@ RUN cd /tmp && \
     cordova create fakeapp && \
     cd /tmp/fakeapp && \
     cordova platform add android && \
+    cordova build android && \
     cd && \
     rm -rf /tmp/fakeapp
+
+ARG USER_ID
+ARG GROUP_ID
+
+#https://vsupalov.com/docker-shared-permissions/
+#RUN addgroup --gid $GROUP_ID -S user
+#RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
+#USER user
 
 VOLUME ["/data"]
 WORKDIR /data
