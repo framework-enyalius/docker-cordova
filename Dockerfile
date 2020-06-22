@@ -5,7 +5,7 @@ ENV ANDROID_SDK_ROOT    /opt/android-sdk
 ENV PATH            ${PATH}:${ANDROID_SDK_ROOT}/tools/bin:${ANDROID_SDK_ROOT}/platform-tools
 ENV SDK_UPDATE      "platform-tools" "platforms;android-28" "platforms;android-27" "build-tools;30.0.0" "extras;google;google_play_services"
 
-RUN apk --update add npm curl gradle
+RUN apk --update add npm curl gradle git
 
 RUN curl -SLO "https://dl.google.com/android/repository/commandlinetools-linux-6514223_latest.zip" \
     && mkdir -p "${ANDROID_SDK_ROOT}" \
@@ -35,4 +35,4 @@ ARG GROUP_ID
 VOLUME ["/data"]
 WORKDIR /data
 
-EXPOSE 8000
+EXPOSE 8000 3000 3001
