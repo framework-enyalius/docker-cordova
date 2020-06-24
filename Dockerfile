@@ -24,8 +24,8 @@ RUN apk --update add npm curl gradle git \
     #\
   #  && rm /bin/sh 
     
-ADD welcome.msg /bin/ 
-RUN rm /bin/sh && mv /bin/welcome.msg /bin/sh 
+ADD welcome.msg /etc/profile.d/ 
+#RUN rm /bin/sh && mv /bin/welcome.msg /bin/sh 
 #&& chmod +x /bin/sh	    
 
     
@@ -47,3 +47,6 @@ VOLUME ["/data"]
 WORKDIR /data
 
 EXPOSE 8000 3000 3001 5037
+
+ENTRYPOINT sh -c /etc/profile.d/welcome.msg
+
